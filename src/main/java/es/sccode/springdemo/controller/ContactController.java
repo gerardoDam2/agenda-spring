@@ -4,6 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,7 +43,7 @@ public class ContactController {
 //	}
 	
 	
-	
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
 	@GetMapping("/contactsform")
 	public String redirectContactForm(Model model,
 			@RequestParam(name="id",required=true,defaultValue="0")int id){
@@ -67,6 +70,8 @@ public class ContactController {
 	@GetMapping("/showcontacts")
 	public ModelAndView showContacts(){
 		ModelAndView mv = new ModelAndView(CONTACTS);
+		User user = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		mv.addObject("username",user.getUsername());
 		mv.addObject("contacts",contactService.listAllContacts());
 		return mv;
 	}
